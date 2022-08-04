@@ -1,10 +1,7 @@
 use nannou::{color::named, prelude::*};
 
 fn main() {
-    nannou::app(model)
-        .update(update)
-        .simple_window(view)
-        .run();
+    nannou::app(model).update(update).size(1000,1000).simple_window(view).run();
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -28,7 +25,7 @@ trait Nannou {
 #[derive(Debug, Clone, Copy)]
 struct Point {
     pos: Position,
-    vel: Position, 
+    vel: Position,
     radius: f32,
 }
 
@@ -51,28 +48,48 @@ impl Nannou for Point {
         self.pos.x += self.vel.x;
         self.pos.y += self.vel.y;
 
-        
+        if self.pos.x + self.radius > 500.0{
+            self.vel.x = -self.vel.x
+        } else if self.pos.x - self.radius< -500.0{
+            self.vel.x = -self.vel.x
+        }
+
+        if self.pos.y + self.radius > 500.0{
+            self.vel.y = -self.vel.y
+        } else if self.pos.y - self.radius< -500.0{
+            self.vel.y = -self.vel.y
+        }
     }
+}
+
+fn random_negative(range: f32) -> f32{
+    random_f32() * range * if random_f32() > 0.5 {1.0} else {-1.0}
 }
 
 impl Default for Point {
     fn default() -> Self {
         Self {
-            pos: Position::new(0.0,0.0),
-            vel: Position::new(1.0,1.0),
+            pos: Position::new(random_f32() * 100.0, random_f32() * 100.0),
+            vel: Position::new(random_negative(3.0), random_negative(3.0)),
             radius: 10.0,
         }
     }
 }
 
 struct Model {
-    point: Point,
+    points: Vec<Point>,
 }
 
 impl Default for Model {
     fn default() -> Self {
         Self {
-            point: Point::new(),
+            points: {
+                let mut ret = Vec::new();
+                for _ in 0..300 {
+                    ret.push(Point::new());
+                }
+                ret
+            },
         }
     }
 }
@@ -80,12 +97,12 @@ impl Default for Model {
 impl Nannou for Model {
     /// Show this model
     fn display(&self, draw: &Draw) {
-        // draw.background().color(self.bg_color);
-        self.point.display(draw);
+        draw.background().color(BLACK);
+        self.points.iter().for_each(|e| e.display(draw));
     }
     /// Update this model
     fn update(&mut self) {
-        self.point.update();
+        self.points.iter_mut().for_each(|e| e.update());
     }
 }
 
